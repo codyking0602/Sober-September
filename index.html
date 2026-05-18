@@ -256,9 +256,9 @@ h2{font-size:28px;margin:0;font-weight:900}
     <div id="todayPoints" style="font-size:21px;color:#7dd3fc;font-weight:900;margin-top:8px">—</div>
   </div>
   <div class="card mini">
-    <div class="label">Closest Rival</div>
-    <div id="rivalText" class="big">—</div>
-    <div id="rivalSub" style="font-size:21px;color:#fde047;font-weight:900;margin-top:8px">—</div>
+    <div class="label">Callout Board</div>
+    <div id="calloutText" class="big">—</div>
+    <div id="calloutSub" style="font-size:21px;color:#fde047;font-weight:900;margin-top:8px">—</div>
   </div>
 </section>
 
@@ -371,14 +371,121 @@ function countUp(id,end){const el=document.getElementById(id);if(!el)return;let 
 function closestRival(stats){let best=null;for(let i=0;i<stats.length-1;i++){const diff=Math.round(stats[i].total-stats[i+1].total);if(diff>0&&(!best||diff<best.diff))best={ahead:stats[i],behind:stats[i+1],diff};}return best}
 function spark(){return `<div class="spark"><span style="height:25%"></span><span style="height:42%"></span><span style="height:36%"></span><span style="height:58%"></span><span style="height:44%"></span><span style="height:68%"></span></div>`}
 function stat(label,val,extra=""){return `<div class="card stat" style="margin:0"><div class="label">${label}</div><div class="num">${val}</div>${extra}</div>`}
+
+function getCallout(stats, rows){
+  const todayKey = dayKey(new Date());
+  const todayRows = rows.filter(r => r.key === todayKey && r.reps > 0);
+  const todaySubmitters = new Set(todayRows.map(r => r.name));
+  const now = new Date();
+  const day = now.getDay();
+
+  // Max-Out Saturday takes priority.
+  if(day === 6){
+    return {
+      main: "⚡ Saturday Is Worth EVERYTHING",
+      sub: "+50 Bonus Points On The Line"
+    };
+  }
+
+  // Nobody has submitted yet today.
+  if(todayRows.length === 0){
+    return {
+      main: "🍺 Nobody Break Sobriety Now",
+      sub: "Waiting For Today’s First Entry"
+    };
+  }
+
+  // Someone has not logged today.
+  const missingToday = stats
+    .filter(s => !todaySubmitters.has(s.name))
+    .sort((a,b) => (b.total || 0) - (a.total || 0))[0];
+
+  if(missingToday){
+    const inactiveDays = missingToday.daysSinceLast;
+    if(inactiveDays !== null && inactiveDays >= 4){
+      return {
+        main: `🥶 ${missingToday.name} Ice Cold This Week`,
+        sub: `${inactiveDays} Days Since Last Entry`
+      };
+    }
+    if(inactiveDays !== null && inactiveDays >= 2){
+      return {
+        main: `👀 Somebody Check On ${missingToday.name}`,
+        sub: `${inactiveDays} Days Since Last Entry`
+      };
+    }
+    return {
+      main: `👀 ${missingToday.name} Has Not Logged Reps Today`,
+      sub: "Still Time To Check In"
+    };
+  }
+
+  // Build today's leaderboard by athlete.
+  const todayByAthlete = {};
+  todayRows.forEach(r => {
+    if(!todayByAthlete[r.name]) todayByAthlete[r.name] = { reps:0, score:0, max:0 };
+    todayByAthlete[r.name].reps += r.reps;
+    todayByAthlete[r.name].score += r.score;
+    todayByAthlete[r.name].max = Math.max(todayByAthlete[r.name].max, r.max || 0);
+  });
+
+  const todayLeader = Object.entries(todayByAthlete)
+    .map(([name, v]) => ({ name, ...v }))
+    .sort((a,b) => b.score - a.score)[0];
+
+  if(todayLeader && todayLeader.reps >= 100){
+    return {
+      main: `🏋️ ${todayLeader.name} Entered A Monster Session`,
+      sub: `${todayLeader.reps} Reps Today`
+    };
+  }
+
+  // Strong max set.
+  const bestMaxToday = Object.entries(todayByAthlete)
+    .map(([name, v]) => ({ name, max: v.max }))
+    .sort((a,b) => b.max - a.max)[0];
+
+  if(bestMaxToday && bestMaxToday.max >= 15){
+    return {
+      main: `⚡ ${bestMaxToday.name} Dropped A New Max Set`,
+      sub: `${bestMaxToday.max} Pull-Ups In One Set`
+    };
+  }
+
+  // Tight standings.
+  if(stats.length >= 2){
+    const diff = Math.round(stats[0].total - stats[1].total);
+    if(diff > 0 && diff <= 25){
+      return {
+        main: "⚔️ This Race Is Tightening Up",
+        sub: `${stats[1].name} Is Only ${diff} Points Back`
+      };
+    }
+  }
+
+  // Leader is active today.
+  if(stats[0] && stats[0].today > 0){
+    return {
+      main: `👑 ${stats[0].name} Extending His Lead`,
+      sub: `${Math.round(stats[0].today)} Points Today`
+    };
+  }
+
+  return {
+    main: "🧠 DJ Playing The Long Game",
+    sub: "Refresh After More Entries"
+  };
+}
+
 function render(stats,rows){
   renderPodium(stats);
   const pct=Math.min(100,Math.round((Math.max(...stats.map(s=>s.streak),0)/30)*100));
   document.getElementById("progressText").textContent=pct+"%";document.getElementById("progressBar").style.width=pct+"%";
   const today=[...stats].sort((a,b)=>b.today-a.today)[0];
   document.getElementById("todayLeader").textContent=today?.name||"—";document.getElementById("todayPoints").textContent=`${Math.round(today?.today||0)} pts today`;
-  const rival=closestRival(stats);
-  document.getElementById("rivalText").textContent=rival?`${rival.behind.name} trails ${rival.ahead.name}`:"No close race yet";document.getElementById("rivalSub").textContent=rival?`by ${rival.diff} pts`:"Submit scores";
+  const callout=getCallout(stats,rows);
+  document.getElementById("calloutText").textContent=callout.main;
+  document.getElementById("calloutSub").textContent=callout.sub;
   document.getElementById("leaderboardCards").innerHTML=stats.map((s,i)=>`<button class="leader" onclick="selectAthlete('${s.name}')"><div class="rank">${i===0?'🏆':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>${avatarHTML(s.name,72,29)}<div><div style="font-size:26px;font-weight:900;line-height:1">${s.name}</div><div class="small" style="margin-top:6px;white-space:nowrap">🔥${s.streak}d • 💪${s.best} max • ${checkInShort(s)}</div></div><div class="lscore"><div>${Math.round(s.total)}</div><div class="small">PTS</div></div></button>`).join("");
   const select=document.getElementById("athleteSelect");select.innerHTML=stats.map(s=>`<option value="${s.name}">${s.name}</option>`).join("");
   window.currentStats=stats;showProfile(stats[0].name);renderActivity(rows,stats);
