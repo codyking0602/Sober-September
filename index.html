@@ -323,7 +323,7 @@ function render(stats,rows){
   document.getElementById("todayLeader").textContent=today?.name||"—";document.getElementById("todayPoints").textContent=`${Math.round(today?.today||0)} pts today`;
   const rival=closestRival(stats);
   document.getElementById("rivalText").textContent=rival?`${rival.behind.name} trails ${rival.ahead.name}`:"No close race yet";document.getElementById("rivalSub").textContent=rival?`by ${rival.diff} pts`:"Submit scores";
-  document.getElementById("leaderboardCards").innerHTML=stats.map((s,i)=>`<button class="leader" onclick="selectAthlete('${s.name}')"><div class="rank">${i===0?'🏆':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>${avatarHTML(s.name,72,29)}<div><div style="font-size:26px;font-weight:900;line-height:1">${s.name}</div><div class="small" style="margin-top:6px;white-space:nowrap">${s.streak} day streak • ${s.best} max • ${checkInShort(s)}</div></div><div class="lscore"><div>${Math.round(s.total)}</div><div class="small">PTS</div></div></button>`).join("");
+  document.getElementById("leaderboardCards").innerHTML=stats.map((s,i)=>`<button class="leader" onclick="selectAthlete('${s.name}')"><div class="rank">${i===0?'🏆':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>${avatarHTML(s.name,72,29)}<div><div style="font-size:26px;font-weight:900;line-height:1">${s.name}</div><div class="small" style="margin-top:6px;white-space:nowrap">🔥${s.streak}d • 💪${s.best} max • ${checkInShort(s)}</div></div><div class="lscore"><div>${Math.round(s.total)}</div><div class="small">PTS</div></div></button>`).join("");
   const select=document.getElementById("athleteSelect");select.innerHTML=stats.map(s=>`<option value="${s.name}">${s.name}</option>`).join("");
   window.currentStats=stats;showProfile(stats[0].name);renderActivity(rows,stats);
 }
@@ -352,9 +352,9 @@ function checkInClass(s){
 }
 function checkInShort(s){
   if(s.daysSinceLast===null) return "no entry";
-  if(s.daysSinceLast===0) return "active today";
-  if(s.daysSinceLast===1) return "last entry yesterday";
-  return `last entry ${s.daysSinceLast}d ago`;
+  if(s.daysSinceLast===0) return "🟢 active";
+  if(s.daysSinceLast===1) return "🟡 yesterday";
+  return `⚠️ ${s.daysSinceLast}d inactive`;
 }
 function showProfile(name){
   const s=window.currentStats.find(x=>x.name===name);
