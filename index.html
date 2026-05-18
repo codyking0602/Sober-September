@@ -37,6 +37,12 @@ body{
 h1{font-size:46px;line-height:.9;margin:10px 0;font-weight:900;letter-spacing:-.06em}
 h2{font-size:28px;margin:0;font-weight:900}
 .small{color:#94a3b8;font-size:14px}
+.weight-line{margin-top:8px;color:#cbd5e1;font-size:14px;font-weight:800}
+.checkin-line{margin-top:4px;font-size:13px;font-weight:800}
+.status-green{color:#4ade80}
+.status-yellow{color:#facc15}
+.status-red{color:#f87171}
+.status-gray{color:#94a3b8}
 .label{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#94a3b8;font-weight:800}
 .avatar{
   border-radius:999px;display:flex;align-items:center;justify-content:center;
@@ -291,7 +297,13 @@ function calc(rows){
     r.forEach(x=>{if(!day[x.key])day[x.key]={score:0,reps:0,max:0,date:x.date};day[x.key].score+=x.score;day[x.key].reps+=x.reps;day[x.key].max=Math.max(day[x.key].max,x.max||0);});
     const days=Object.values(day).filter(x=>x.date);
     const total=days.reduce((a,b)=>a+b.score,0), reps=days.reduce((a,b)=>a+b.reps,0), best=Math.max(...r.map(x=>x.max||0),0), avg=days.length?total/days.length:0, today=day[dayKey(new Date())]?.score||0;
-    return {name,total,reps,best,avg,streak:days.length,today};
+    const weights=r.filter(x=>x.bw>0 && x.date).sort((a,b)=>a.date-b.date);
+    const startWeight=weights.length?weights[0].bw:0;
+    const currentWeight=weights.length?weights[weights.length-1].bw:0;
+    const weightChange=currentWeight&&startWeight?currentWeight-startWeight:0;
+    const lastEntry=r.filter(x=>x.date).sort((a,b)=>b.date-a.date)[0]?.date || null;
+    const daysSinceLast=lastEntry?Math.floor((new Date()-lastEntry)/86400000):null;
+    return {name,total,reps,best,avg,streak:days.length,today,startWeight,currentWeight,weightChange,lastEntry,daysSinceLast};
   }).sort((a,b)=>b.total-a.total);
 }
 function podiumSlot(s,place){
@@ -311,18 +323,55 @@ function render(stats,rows){
   document.getElementById("todayLeader").textContent=today?.name||"—";document.getElementById("todayPoints").textContent=`${Math.round(today?.today||0)} pts today`;
   const rival=closestRival(stats);
   document.getElementById("rivalText").textContent=rival?`${rival.behind.name} trails ${rival.ahead.name}`:"No close race yet";document.getElementById("rivalSub").textContent=rival?`by ${rival.diff} pts`:"Submit scores";
-  document.getElementById("leaderboardCards").innerHTML=stats.map((s,i)=>`<button class="leader" onclick="selectAthlete('${s.name}')"><div class="rank">${i===0?'🏆':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>${avatarHTML(s.name,72,29)}<div><div style="font-size:26px;font-weight:900;line-height:1">${s.name}</div><div class="small" style="margin-top:6px;white-space:nowrap">${s.streak} day streak • ${s.best} max</div></div><div class="lscore"><div>${Math.round(s.total)}</div><div class="small">PTS</div></div></button>`).join("");
+  document.getElementById("leaderboardCards").innerHTML=stats.map((s,i)=>`<button class="leader" onclick="selectAthlete('${s.name}')"><div class="rank">${i===0?'🏆':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>${avatarHTML(s.name,72,29)}<div><div style="font-size:26px;font-weight:900;line-height:1">${s.name}</div><div class="small" style="margin-top:6px;white-space:nowrap">${s.streak} day streak • ${s.best} max • ${checkInShort(s)}</div></div><div class="lscore"><div>${Math.round(s.total)}</div><div class="small">PTS</div></div></button>`).join("");
   const select=document.getElementById("athleteSelect");select.innerHTML=stats.map(s=>`<option value="${s.name}">${s.name}</option>`).join("");
   window.currentStats=stats;showProfile(stats[0].name);renderActivity(rows,stats);
+}
+function weightChangeText(s){
+  if(!s.currentWeight) return "Weight: not entered yet";
+  const change=Math.round(s.weightChange*10)/10;
+  if(change===0) return `Current weight: ${s.currentWeight} lbs • no change`;
+  const direction=change>0?"up":"down";
+  return `Current weight: ${s.currentWeight} lbs • ${direction} ${Math.abs(change)} lbs`;
+}
+function weightChangeClass(s){
+  if(!s.currentWeight || !s.weightChange) return "status-gray";
+  return s.weightChange>0?"status-red":"status-green";
+}
+function checkInText(s){
+  if(!s.lastEntry) return "Last check-in: no entry yet";
+  if(s.daysSinceLast===0) return "Last check-in: today";
+  if(s.daysSinceLast===1) return "Last check-in: yesterday";
+  return `Last check-in: ${s.daysSinceLast} days ago`;
+}
+function checkInClass(s){
+  if(s.daysSinceLast===null) return "status-gray";
+  if(s.daysSinceLast<=1) return "status-green";
+  if(s.daysSinceLast<=3) return "status-yellow";
+  return "status-red";
+}
+function checkInShort(s){
+  if(s.daysSinceLast===null) return "no entry";
+  if(s.daysSinceLast===0) return "active today";
+  if(s.daysSinceLast===1) return "last entry yesterday";
+  return `last entry ${s.daysSinceLast}d ago`;
 }
 function showProfile(name){
   const s=window.currentStats.find(x=>x.name===name);
   document.getElementById("profileSection").style.setProperty("--athlete-glow", ATHLETE_GLOW[s.name] || "#7c3aed");
   document.getElementById("athleteSelect").value=s.name;
-  document.getElementById("profile").innerHTML=`<div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">${profilePhotoHTML(s.name,116,46)}<div style="min-width:0"><div style="font-size:41px;font-weight:900;line-height:1">${s.name}</div><div style="font-size:32px;font-weight:900;color:#7dd3fc;margin-top:8px">${Math.round(s.total)} PTS</div></div></div><div class="stat-grid">${stat("Current Streak",s.streak,"🔥🔥🔥")}${stat("Best Max Set",s.best,spark())}${stat("Avg Daily",s.avg.toFixed(1))}${stat("Total Reps",s.reps)}</div>`;
+  document.getElementById("profile").innerHTML=`<div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">${profilePhotoHTML(s.name,116,46)}<div style="min-width:0"><div style="font-size:41px;font-weight:900;line-height:1">${s.name}</div><div style="font-size:32px;font-weight:900;color:#7dd3fc;margin-top:8px">${Math.round(s.total)} PTS</div><div class="weight-line ${weightChangeClass(s)}">${weightChangeText(s)}</div><div class="checkin-line ${checkInClass(s)}">${checkInText(s)}</div></div></div><div class="stat-grid">${stat("Current Streak",s.streak,"🔥🔥🔥")}${stat("Best Max Set",s.best,spark())}${stat("Avg Daily",s.avg.toFixed(1))}${stat("Total Reps",s.reps)}</div>`;
 }
 function selectAthlete(name){showProfile(name);document.getElementById("profileSection").scrollIntoView({behavior:"smooth"})}
-function renderActivity(rows,stats){const latest=[...rows].filter(r=>r.date).sort((a,b)=>b.date-a.date).slice(0,3),items=[];if(stats[0]&&stats[0].total>0)items.push(`🔥 ${stats[0].name} leads overall with ${Math.round(stats[0].total)} pts`);latest.forEach(r=>{items.push(`💪 ${r.name} submitted ${r.reps} reps for ${Math.round(r.score)} pts`);if(r.max>0)items.push(`⚡ ${r.name} logged a ${r.max} rep max set`);});const rival=closestRival(stats);if(rival)items.push(`⚔️ ${rival.behind.name} is only ${rival.diff} pts behind ${rival.ahead.name}`);document.getElementById("activityFeed").innerHTML=items.slice(0,5).map(x=>`<div class="feed">${x}</div>`).join("");document.getElementById("activityTime").textContent="Updated just now"}
+function renderActivity(rows,stats){const latest=[...rows].filter(r=>r.date).sort((a,b)=>b.date-a.date).slice(0,3),items=[];if(stats[0]&&stats[0].total>0)items.push(`🔥 ${stats[0].name} leads overall with ${Math.round(stats[0].total)} pts`);latest.forEach(r=>{items.push(`💪 ${r.name} submitted ${r.reps} reps for ${Math.round(r.score)} pts`);if(r.max>0)items.push(`⚡ ${r.name} logged a ${r.max} rep max set`);});const biggestWeightMove=[...stats].filter(s=>s.currentWeight).sort((a,b)=>Math.abs(b.weightChange)-Math.abs(a.weightChange))[0];
+  if(biggestWeightMove && Math.abs(biggestWeightMove.weightChange)>0){
+    const wc=Math.round(biggestWeightMove.weightChange*10)/10;
+    items.push(`⚖️ ${biggestWeightMove.name} is ${wc>0?"up":"down"} ${Math.abs(wc)} lbs since the start`);
+  }
+  const inactive=[...stats].filter(s=>s.daysSinceLast!==null && s.daysSinceLast>=2).sort((a,b)=>b.daysSinceLast-a.daysSinceLast)[0];
+  if(inactive) items.push(`👀 ${inactive.name} has not logged pull-ups in ${inactive.daysSinceLast} days`);
+  const rival=closestRival(stats);if(rival)items.push(`⚔️ ${rival.behind.name} is only ${rival.diff} pts behind ${rival.ahead.name}`);
+  document.getElementById("activityFeed").innerHTML=items.slice(0,5).map(x=>`<div class="feed">${x}</div>`).join("");document.getElementById("activityTime").textContent="Updated just now"}
 function getStartTarget(){
   const now=new Date();let y=now.getFullYear();let start=new Date(y,8,1,0,0,0);let end=new Date(y,9,1,0,0,0);
   if(now>=end){y++;start=new Date(y,8,1,0,0,0);end=new Date(y,9,1,0,0,0)}
