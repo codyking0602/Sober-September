@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sober September V15</title>
+<title>Sober September V27</title>
 <style>
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -199,15 +199,86 @@ h2{font-size:28px;margin:0;font-weight:900}
   letter-spacing:.12em!important;
 }
 
+
+/* Event skins and form button */
+.log-reps-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  margin:0 0 14px;
+  padding:15px 16px;
+  border-radius:22px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:white;
+  text-decoration:none;
+  font-weight:900;
+  font-size:16px;
+  border:2px solid #020617;
+  box-shadow:0 0 28px rgba(34,197,94,.24);
+}
+.log-reps-btn:active{transform:scale(.985)}
+.mode-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:12px;
+  padding:9px 13px;
+  border-radius:999px;
+  background:rgba(124,58,237,.18);
+  border:1px solid rgba(255,255,255,.10);
+  color:#e9d5ff;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+body.maxout-mode .count-card,
+body.maxout-mode #modeSection{
+  border-color:rgba(250,204,21,.38);
+  box-shadow:
+    0 0 0 1px rgba(250,204,21,.10),
+    0 10px 42px rgba(0,0,0,.45),
+    0 0 48px rgba(250,204,21,.12);
+  background:
+    radial-gradient(circle at top left, rgba(250,204,21,.13), transparent 42%),
+    radial-gradient(circle at bottom right, rgba(168,85,247,.15), transparent 42%),
+    linear-gradient(180deg,rgba(8,15,30,.97),rgba(2,6,23,.94));
+}
+body.maxout-mode .mode-badge{
+  background:linear-gradient(135deg,#facc15,#a855f7);
+  color:#020617;
+  border:0;
+  box-shadow:0 0 26px rgba(250,204,21,.28);
+}
+body.maxout-mode .crown{
+  filter:drop-shadow(0 0 12px rgba(250,204,21,.9));
+}
+body.redemption-mode .count-card,
+body.redemption-mode #modeSection{
+  border-color:rgba(249,115,22,.40);
+  box-shadow:
+    0 0 0 1px rgba(249,115,22,.10),
+    0 10px 42px rgba(0,0,0,.45),
+    0 0 48px rgba(249,115,22,.14);
+  background:
+    radial-gradient(circle at top left, rgba(249,115,22,.16), transparent 42%),
+    radial-gradient(circle at bottom right, rgba(239,68,68,.12), transparent 42%),
+    linear-gradient(180deg,rgba(8,15,30,.97),rgba(2,6,23,.94));
+}
+body.redemption-mode .mode-badge{
+  background:linear-gradient(135deg,#f97316,#ef4444);
+  color:white;
+  border:0;
+  box-shadow:0 0 26px rgba(249,115,22,.25);
+}
+body.redemption-mode .log-reps-btn{
+  background:linear-gradient(135deg,#f97316,#ef4444);
+  box-shadow:0 0 28px rgba(249,115,22,.22);
+}
+
 </style>
-
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="theme-color" content="#050816">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Sober September">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 </head>
 <body>
 <div class="center">
@@ -242,6 +313,10 @@ h2{font-size:28px;margin:0;font-weight:900}
     <div class="count"><div id="s">00</div><div>Sec</div></div>
   </div>
 </section>
+
+<a class="log-reps-btn" href="https://docs.google.com/forms/d/e/1FAIpQLScMbwOOKhfXxtna_idZXLJKOv-gHe0aG-Z4iYXJg81SH5LEbg/viewform?pli=1&pli=1" target="_blank" rel="noopener noreferrer">
+  📝 LOG TODAY'S REPS
+</a>
 
 <section id="podiumSection" class="card podium-card">
   <div style="display:flex;justify-content:space-between;align-items:center">
@@ -289,9 +364,10 @@ h2{font-size:28px;margin:0;font-weight:900}
 <section id="modeSection" class="card">
   <div style="display:flex;gap:16px;align-items:center">
     <div style="width:56px;height:56px;border-radius:23px;background:rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;font-size:32px">⚡</div>
-    <div><div class="label" style="color:#c4b5fd">Weekend Mode</div><h2>MAX-OUT<br>SATURDAY</h2></div>
+    <div><div class="label" style="color:#c4b5fd">Weekend Mode</div><h2><span id="modeTitle">MAX-OUT<br>SATURDAY</span></h2></div>
   </div>
-  <p style="font-size:19px;line-height:1.35;color:#e2e8f0">Best single-set strict pull-up max wins <b style="color:#fde047">+50 bonus points.</b></p>
+  <div id="eventModeBadge" class="mode-badge">Normal Mode</div>
+  <p style="font-size:19px;line-height:1.35;color:#e2e8f0"><span id="modeDescription">Best single-set strict pull-up max wins <b style="color:#fde047">+50 bonus points.</b></span></p>
   <div class="feed">Redemption Weekend: <b>Sept 19–20</b>. Replace two lowest non-zero scoring days if higher.</div>
 </section>
 
@@ -386,9 +462,18 @@ function getCallout(stats, rows){
   const todaySubmitters = new Set(todayRows.map(r => r.name));
   const now = new Date();
   const day = now.getDay();
+  const phase = getChallengePhase();
+
+  // Redemption Weekend takes priority.
+  if(phase.phase === "redemption"){
+    return {
+      main: "🔥 Redemption Weekend Is LIVE",
+      sub: "Two Scores Can Be Replaced"
+    };
+  }
 
   // Max-Out Saturday takes priority.
-  if(day === 6){
+  if(phase.phase === "maxout"){
     return {
       main: "⚡ Saturday Is Worth EVERYTHING",
       sub: "+50 Bonus Points On The Line"
@@ -543,14 +628,96 @@ function renderActivity(rows,stats){const latest=[...rows].filter(r=>r.date).sor
   if(inactive) items.push(`👀 ${inactive.name} has not logged pull-ups in ${inactive.daysSinceLast} days`);
   const rival=closestRival(stats);if(rival)items.push(`⚔️ ${rival.behind.name} is only ${rival.diff} pts behind ${rival.ahead.name}`);
   document.getElementById("activityFeed").innerHTML=items.slice(0,5).map(x=>`<div class="feed">${x}</div>`).join("");document.getElementById("activityTime").textContent="Updated just now"}
+
+function getChallengePhase(){
+  const now=new Date();
+  const y=now.getFullYear();
+  const septStart=new Date(y,8,1,0,0,0);
+  const redStart=new Date(y,8,19,0,0,0);
+  const redEnd=new Date(y,8,21,0,0,0);
+  const monthEnd=new Date(y,9,1,0,0,0);
+  const isSaturday=now.getDay()===6;
+
+  if(now>=redStart && now<redEnd){
+    return {
+      phase:"redemption",
+      title:"🔥 Redemption Weekend",
+      sub:"Replace Your Two Lowest Non-Zero Scores",
+      icon:"🔥",
+      kicker:"Second Chance",
+      target:redEnd,
+      badge:"Second Chance"
+    };
+  }
+
+  if(now>=septStart && now<monthEnd && isSaturday){
+    const tomorrow=new Date(now);
+    tomorrow.setDate(now.getDate()+1);
+    tomorrow.setHours(0,0,0,0);
+    return {
+      phase:"maxout",
+      title:"⚡ Max-Out Saturday",
+      sub:"+50 Bonus Points For Highest Strict Pull-Up Set",
+      icon:"⚡",
+      kicker:"Weekend Mode",
+      target:tomorrow,
+      badge:"+50 PTS On The Line"
+    };
+  }
+
+  if(now>=septStart && now<monthEnd){
+    return {
+      phase:"live",
+      title:"Sober September Is Live",
+      sub:"Days Remaining In The Challenge",
+      icon:"🔥",
+      kicker:"Challenge Mode",
+      target:monthEnd,
+      badge:"Normal Mode"
+    };
+  }
+
+  let start=new Date(y,8,1,0,0,0);
+  if(now>=monthEnd) start=new Date(y+1,8,1,0,0,0);
+  return {
+    phase:"pre",
+    title:"Sober September Starts In",
+    sub:"Challenge Begins September 1",
+    icon:"🚀",
+    kicker:"Countdown",
+    target:start,
+    badge:"Normal Mode"
+  };
+}
+
+
+function updateModeCard(phase){
+  const title=document.getElementById("modeTitle");
+  const desc=document.getElementById("modeDescription");
+  if(!title || !desc) return;
+  if(phase.phase==="redemption"){
+    title.innerHTML="REDEMPTION<br>WEEKEND";
+    desc.innerHTML='Replace your two lowest non-zero scoring days if higher. <b style="color:#fde047">Second chance is live.</b>';
+  } else {
+    title.innerHTML="MAX-OUT<br>SATURDAY";
+    desc.innerHTML='Best single-set strict pull-up max wins <b style="color:#fde047">+50 bonus points.</b>';
+  }
+}
+
+function applyChallengePhase(phase){
+  document.body.classList.remove("maxout-mode","redemption-mode");
+  if(phase.phase==="maxout") document.body.classList.add("maxout-mode");
+  if(phase.phase==="redemption") document.body.classList.add("redemption-mode");
+  const badge=document.getElementById("eventModeBadge");
+  if(badge) badge.textContent=phase.badge;
+  updateModeCard(phase);
+}
+
 function getStartTarget(){
-  const now=new Date();let y=now.getFullYear();let start=new Date(y,8,1,0,0,0);let end=new Date(y,9,1,0,0,0);
-  if(now>=end){y++;start=new Date(y,8,1,0,0,0);end=new Date(y,9,1,0,0,0)}
-  if(now>=start && now<end){return {title:"Sober September Is Live",sub:"Days remaining in the challenge",icon:"🔥",target:end,kicker:"Challenge Mode"}}
-  return {title:"Sober September Starts In",sub:"Challenge begins September 1",icon:"🚀",target:start,kicker:"Countdown"};
+  return getChallengePhase();
 }
 function updateCountdown(){
-  const e=getStartTarget(),now=new Date();let diff=Math.max(0,e.target-now);
+  const e=getStartTarget(),now=new Date();applyChallengePhase(e);let diff=Math.max(0,e.target-now);
   const d=Math.floor(diff/86400000);diff-=d*86400000;const h=Math.floor(diff/3600000);diff-=h*3600000;const m=Math.floor(diff/60000);diff-=m*60000;const s=Math.floor(diff/1000);
   document.getElementById("eventTitle").textContent=e.title;document.getElementById("eventSub").textContent=e.sub;document.getElementById("eventIcon").textContent=e.icon;document.getElementById("eventKicker").textContent=e.kicker;
   document.getElementById("d").textContent=String(d).padStart(2,"0");document.getElementById("h").textContent=String(h).padStart(2,"0");document.getElementById("m").textContent=String(m).padStart(2,"0");document.getElementById("s").textContent=String(s).padStart(2,"0");
