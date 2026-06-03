@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sober September V27</title>
+<title>Sober September V28 Max-Out Preview</title>
 <style>
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -276,6 +276,30 @@ body.redemption-mode .mode-badge{
 body.redemption-mode .log-reps-btn{
   background:linear-gradient(135deg,#f97316,#ef4444);
   box-shadow:0 0 28px rgba(249,115,22,.22);
+}
+
+
+/* V28 forced Max-Out preview polish */
+body.maxout-mode .podium-card{
+  border-color:rgba(250,204,21,.32);
+  box-shadow:
+    0 0 0 1px rgba(250,204,21,.10),
+    0 10px 42px rgba(0,0,0,.45),
+    0 0 54px rgba(250,204,21,.12);
+}
+body.maxout-mode #calloutSub{
+  color:#facc15!important;
+}
+body.maxout-mode .p1 .p-block{
+  box-shadow:0 0 30px rgba(250,204,21,.18);
+  border-color:rgba(250,204,21,.22);
+}
+body.maxout-mode .log-reps-btn{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+}
+body.maxout-mode #eventIcon{
+  background:rgba(250,204,21,.16)!important;
+  box-shadow:0 0 24px rgba(250,204,21,.28);
 }
 
 </style>
@@ -630,63 +654,15 @@ function renderActivity(rows,stats){const latest=[...rows].filter(r=>r.date).sor
   document.getElementById("activityFeed").innerHTML=items.slice(0,5).map(x=>`<div class="feed">${x}</div>`).join("");document.getElementById("activityTime").textContent="Updated just now"}
 
 function getChallengePhase(){
-  const now=new Date();
-  const y=now.getFullYear();
-  const septStart=new Date(y,8,1,0,0,0);
-  const redStart=new Date(y,8,19,0,0,0);
-  const redEnd=new Date(y,8,21,0,0,0);
-  const monthEnd=new Date(y,9,1,0,0,0);
-  const isSaturday=now.getDay()===6;
-
-  if(now>=redStart && now<redEnd){
-    return {
-      phase:"redemption",
-      title:"🔥 Redemption Weekend",
-      sub:"Replace Your Two Lowest Non-Zero Scores",
-      icon:"🔥",
-      kicker:"Second Chance",
-      target:redEnd,
-      badge:"Second Chance"
-    };
-  }
-
-  if(now>=septStart && now<monthEnd && isSaturday){
-    const tomorrow=new Date(now);
-    tomorrow.setDate(now.getDate()+1);
-    tomorrow.setHours(0,0,0,0);
-    return {
-      phase:"maxout",
-      title:"⚡ Max-Out Saturday",
-      sub:"+50 Bonus Points For Highest Strict Pull-Up Set",
-      icon:"⚡",
-      kicker:"Weekend Mode",
-      target:tomorrow,
-      badge:"+50 PTS On The Line"
-    };
-  }
-
-  if(now>=septStart && now<monthEnd){
-    return {
-      phase:"live",
-      title:"Sober September Is Live",
-      sub:"Days Remaining In The Challenge",
-      icon:"🔥",
-      kicker:"Challenge Mode",
-      target:monthEnd,
-      badge:"Normal Mode"
-    };
-  }
-
-  let start=new Date(y,8,1,0,0,0);
-  if(now>=monthEnd) start=new Date(y+1,8,1,0,0,0);
+  const target=new Date(Date.now()+86400000);
   return {
-    phase:"pre",
-    title:"Sober September Starts In",
-    sub:"Challenge Begins September 1",
-    icon:"🚀",
-    kicker:"Countdown",
-    target:start,
-    badge:"Normal Mode"
+    phase:"maxout",
+    title:"⚡ Max-Out Saturday",
+    sub:"+50 Bonus Points For Highest Strict Pull-Up Set",
+    icon:"⚡",
+    kicker:"Weekend Mode",
+    target,
+    badge:"⚡ +50 PTS On The Line"
   };
 }
 
