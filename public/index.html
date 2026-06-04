@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sober September V29 Tabs</title>
+<title>Sober September V29.1 Tabs</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#050816">
@@ -123,6 +123,24 @@ body.redemption-mode .count-card,body.redemption-mode .mode-card{border-color:rg
 body.redemption-mode .count-card{background:radial-gradient(circle at top left,rgba(249,115,22,.18),transparent 42%),radial-gradient(circle at bottom right,rgba(239,68,68,.16),transparent 44%),linear-gradient(180deg,rgba(8,15,30,.98),rgba(2,6,23,.94))!important}
 body.redemption-mode .mode-badge{background:linear-gradient(135deg,#f97316,#ef4444);color:white;border:0}
 body.redemption-mode .log-reps-btn{background:linear-gradient(135deg,#f97316,#ef4444)}
+
+/* V29.1 mobile sanity polish */
+.card{scroll-margin-top:12px}
+.board-stats{grid-template-columns:1fr}
+.leader{grid-template-columns:34px 50px minmax(0,1fr) 58px}
+.leader .avatar{width:50px!important;height:50px!important;font-size:20px!important}
+.leader-name{font-size:20px}
+.leader-meta{font-size:10.5px}
+.lscore{min-width:58px}.lscore div:first-child{font-size:30px}
+.nav{bottom:calc(10px + env(safe-area-inset-bottom));}
+.app{padding-bottom:calc(102px + env(safe-area-inset-bottom));}
+.profile-photo{width:104px;height:104px}
+.profile-name{font-size:34px}.profile-points{font-size:27px}
+.ath-grid{grid-template-columns:1fr}
+.ath-card{min-height:auto}
+.daily-row{grid-template-columns:62px minmax(0,1fr) 48px}
+.record-value{font-size:20px}
+@media(min-width:431px){.board-stats{grid-template-columns:1fr 1fr}.ath-grid{grid-template-columns:1fr 1fr}.profile-photo{width:116px;height:116px}.profile-name{font-size:38px}.profile-points{font-size:30px}}
 
 @media(max-width:390px){
  h1{font-size:40px}
@@ -266,16 +284,16 @@ body.redemption-mode .log-reps-btn{background:linear-gradient(135deg,#f97316,#ef
 const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6sg6Ciu_MQOmwK-N3jY2yp-dhYr33MrpR0pV_jR8VoWUtUU1fras-JP04htR-Psk2HCzSDsae2d9K/pub?gid=551726986&single=true&output=csv";
 const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLScMbwOOKhfXxtna_idZXLJKOv-gHe0aG-Z4iYXJg81SH5LEbg/viewform?pli=1&pli=1";
 const ATHLETES=["Cody","DJ","Tyler","Shane"];
-  
-const ATHLETE_GLOW={"Shane":"#f97316","Cody":"#22c55e","DJ":"#2563eb","Tyler":"#9333ea"};
-const initials=n=>({Shane:"SK",Cody:"CK",DJ:"DJ",Tyler:"TS"}[n] || n.slice(0,2).toUpperCase());
-const colorClass=n=>({Cody:"green",DJ:"blue",Tyler:"purple",Shane:"orange"}[n]||"blue");
 const PROFILE_IMAGES = {
   Cody: "/images/cody.jpg",
   Shane: "/images/shane.jpg",
   DJ: "/images/dj.jpg",
   Tyler: "/images/tyler.jpg"
 };
+const ATHLETE_GLOW={"Shane":"#f97316","Cody":"#22c55e","DJ":"#2563eb","Tyler":"#9333ea"};
+const initials=n=>({Shane:"SK",Cody:"CK",DJ:"DJ",Tyler:"TS"}[n] || n.slice(0,2).toUpperCase());
+const colorClass=n=>({Cody:"green",DJ:"blue",Tyler:"purple",Shane:"orange"}[n]||"blue");
+
 function showTab(tab){
   document.querySelectorAll(".tab-page").forEach(p=>p.classList.toggle("active",p.id===tab));
   document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
@@ -285,7 +303,7 @@ function avatarHTML(name,sizePx,fontPx){
   return `<div class="avatar ${colorClass(name)}" style="width:${sizePx}px;height:${sizePx}px;font-size:${fontPx}px">${initials(name)}</div>`;
 }
 function profilePhotoHTML(name,w=116,h=116){
-  if(PROFILE_IMAGES[name]) return `<div class="photo-card profile-photo" style="--athlete-glow:${ATHLETE_GLOW[name]||"#7c3aed"};width:${w}px;height:${h}px"><img src="${PROFILE_IMAGES[name]}" alt="${name}"></div>`;
+  if(PROFILE_IMAGES[name]) return `<div class="photo-card profile-photo" style="--athlete-glow:${ATHLETE_GLOW[name]||"#7c3aed"};width:${w}px;height:${h}px"><img src="${PROFILE_IMAGES[name]}" alt="${name}" onerror="this.parentElement.outerHTML=\'<div class=\'avatar ${colorClass(name)}\' style=\'width:${w}px;height:${h}px;font-size:42px\'>${initials(name)}</div>\'"></div>`;
   return `<div class="avatar ${colorClass(name)}" style="width:${w}px;height:${h}px;font-size:42px">${initials(name)}</div>`;
 }
 function norm(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"")}
