@@ -120,16 +120,27 @@ function renderChart(s){
       r="4" fill="#22c55e"/>
   `).join("");
 
-  const monthTicks=pts.map((p,i)=>
-    i===0||i===pts.length-1
-      ? `<text class="chart-label"
-           x="${p[0]}"
-           y="${h-10}"
-           text-anchor="${i===0?'start':'end'}">
-           ${niceDate(p[2].date)}
-         </text>`
-      : ""
-  ).join("");
+  const labelStep =
+  vals.length <= 10 ? 1 :
+  vals.length <= 20 ? 2 :
+  3;
+
+const monthTicks = pts.map((p,i)=>{
+  if(i % labelStep !== 0 && i !== pts.length - 1) return "";
+
+  const d = p[2].date;
+  const label = `${d.getMonth()+1}/${d.getDate()}`;
+
+  return `
+    <text
+      class="chart-label"
+      x="${p[0]}"
+      y="${h-10}"
+      text-anchor="middle">
+      ${label}
+    </text>
+  `;
+}).join("");
 
   return `
     <div class="chart">
