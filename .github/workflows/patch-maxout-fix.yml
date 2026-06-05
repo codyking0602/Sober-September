@@ -1,0 +1,40 @@
+name: Patch Max-Out skin fixes
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index.html
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('public/index.html')
+          s = p.read_text()
+
+          old_css = 'body.maxout-mode .p1 .p-avatar{border-color:rgba(250,204,21,.7);box-shadow:0 0 36px rgba(250,204,21,.28)}'
+          new_css = 'body.maxout-mode .p1 .p-avatar{background:transparent!important;box-shadow:none!important;border-radius:999px}body.maxout-mode .p1 .p-avatar .avatar{border-color:rgba(250,204,21,.7);box-shadow:0 0 36px rgba(250,204,21,.28)}'
+          s = s.replace(old_css, new_css)
+
+          new_fn = 'function renderMaxLeader(stats,rows){const todayKey=dayKey(new Date());const todayRows=rows.filter(r=>r.key===todayKey&&r.max>0);const leader=[...todayRows].sort((a,b)=>(b.max||0)-(a.max||0))[0];document.getElementById("maxLeaderName").textContent=leader?.name||"No Entries Yet";document.getElementById("maxLeaderSet").textContent=leader?.max?`${leader.max} reps`:"Waiting For First Max Set"}function render(stats,rows)'
+          s = re.sub(r'function renderMaxLeader\(stats\)\{.*?\}function render\(stats,rows\)', new_fn, s, flags=re.S)
+          s = s.replace('renderMaxLeader(stats);', 'renderMaxLeader(stats,rows);')
+          p.write_text(s)
+          Path('.github/workflows/patch-maxout-fix.yml').unlink()
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/index.html .github/workflows/patch-maxout-fix.yml
+          git commit -m "Fix Max-Out podium and live max leader"
+          git push
