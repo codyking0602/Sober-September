@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sober September V29.1 Tabs</title>
+<title>Sober September V30 Tabs</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#050816">
@@ -124,24 +124,38 @@ body.redemption-mode .count-card{background:radial-gradient(circle at top left,r
 body.redemption-mode .mode-badge{background:linear-gradient(135deg,#f97316,#ef4444);color:white;border:0}
 body.redemption-mode .log-reps-btn{background:linear-gradient(135deg,#f97316,#ef4444)}
 
-/* V29.1 mobile sanity polish */
-.card{scroll-margin-top:12px}
-.board-stats{grid-template-columns:1fr}
-.leader{grid-template-columns:34px 50px minmax(0,1fr) 58px}
+/* V30 cleanup */
+.loading .refresh::after{content:"";display:inline-block;width:13px;height:13px;margin-left:8px;border:2px solid rgba(255,255,255,.35);border-top-color:white;border-radius:999px;vertical-align:-2px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.board-stats{grid-template-columns:1fr!important}
+.board-focus{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.watch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.watch-row:last-child{border-bottom:0}
+.watch-name{font-weight:900;font-size:17px}
+.watch-detail{font-size:12px;color:#94a3b8;margin-top:2px}
+.leader{grid-template-columns:34px 50px minmax(0,1fr) 58px!important}
 .leader .avatar{width:50px!important;height:50px!important;font-size:20px!important}
-.leader-name{font-size:20px}
-.leader-meta{font-size:10.5px}
-.lscore{min-width:58px}.lscore div:first-child{font-size:30px}
-.nav{bottom:calc(10px + env(safe-area-inset-bottom));}
-.app{padding-bottom:calc(102px + env(safe-area-inset-bottom));}
-.profile-photo{width:104px;height:104px}
-.profile-name{font-size:34px}.profile-points{font-size:27px}
-.ath-grid{grid-template-columns:1fr}
-.ath-card{min-height:auto}
-.daily-row{grid-template-columns:62px minmax(0,1fr) 48px}
-.record-value{font-size:20px}
-@media(min-width:431px){.board-stats{grid-template-columns:1fr 1fr}.ath-grid{grid-template-columns:1fr 1fr}.profile-photo{width:116px;height:116px}.profile-name{font-size:38px}.profile-points{font-size:30px}}
-
+.leader-name{font-size:20px!important}
+.leader-meta{font-size:11px!important;white-space:normal!important;display:block}
+.meta-line{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lscore{min-width:58px!important}.lscore div:first-child{font-size:30px!important}
+.ath-grid{display:flex!important;gap:10px;overflow-x:auto;padding:2px 2px 4px;margin-top:12px;scroll-snap-type:x mandatory}
+.ath-card{min-width:142px!important;min-height:auto!important;padding:11px!important;scroll-snap-align:start}
+.ath-card-top{gap:8px!important}
+.ath-card .avatar{width:44px!important;height:44px!important;font-size:18px!important}
+.ath-card .name{font-size:18px!important}
+.ath-card .pts{font-size:20px!important}
+.daily-log-list{max-height:420px;overflow:auto;padding-right:3px}
+.daily-row{grid-template-columns:62px minmax(0,1fr) 42px!important;padding:10px 0!important}
+.chart-card{background:radial-gradient(circle at top right,rgba(56,189,248,.12),transparent 34%),rgba(5,10,30,.72)!important}
+.chart{height:190px!important;border-radius:24px!important;background:linear-gradient(180deg,rgba(15,23,42,.7),rgba(2,6,23,.9))!important}
+.chart svg{display:block;width:100%;height:100%}
+.chart-label{font-size:12px;fill:#94a3b8}
+.chart-value{font-size:18px;fill:#7dd3fc;font-weight:900}
+.record-value{font-size:20px!important}
+.event-card{border-color:rgba(250,204,21,.18);background:radial-gradient(circle at top left,rgba(250,204,21,.10),transparent 36%),rgba(255,255,255,.02)}
+@media(min-width:431px){.board-focus{grid-template-columns:1fr 1fr}.ath-grid{display:grid!important;grid-template-columns:1fr 1fr;overflow:visible}.ath-card{min-width:0!important}.daily-log-list{max-height:none}}
+@media(max-width:390px){.grid2{grid-template-columns:1fr}.board-focus{grid-template-columns:1fr}h1{font-size:40px}}
 @media(max-width:390px){
  h1{font-size:40px}
  .app{padding-left:10px;padding-right:10px}
@@ -219,17 +233,24 @@ body.redemption-mode .log-reps-btn{background:linear-gradient(135deg,#f97316,#ef
 <section id="board" class="tab-page">
   <header class="card">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <div><div class="label" style="color:#c4b5fd">Competition View</div><h2>Board</h2><div class="small">Standings, weight, and check-ins</div></div>
+      <div><div class="label" style="color:#c4b5fd">Competition View</div><h2>Board</h2><div class="small">Standings, check-ins, and weight changes</div></div>
       <button class="refresh" onclick="loadAndRender()">Refresh</button>
     </div>
   </header>
-  <section class="board-stats">
-    <div class="card mini"><div class="label">Today’s Leader</div><div id="boardTodayLeader" class="big">—</div><div id="boardTodayPoints" style="font-size:21px;color:#7dd3fc;font-weight:900;margin-top:8px">—</div></div>
-    <div class="card mini"><div class="label">Callout Board</div><div id="boardCalloutText" class="big">—</div><div id="boardCalloutSub" style="font-size:21px;color:#fde047;font-weight:900;margin-top:8px">—</div></div>
+  <section class="board-focus">
+    <div class="card mini">
+      <div class="label">Today’s Leader</div>
+      <div id="boardTodayLeader" class="big">—</div>
+      <div id="boardTodayPoints" style="font-size:21px;color:#7dd3fc;font-weight:900;margin-top:8px">—</div>
+    </div>
+    <div class="card mini">
+      <div class="label">Check-In Watch</div>
+      <div id="checkInWatch"></div>
+    </div>
   </section>
   <section class="card">
     <h2>Leaderboard</h2>
-    <div class="small">Tap athlete to view profile</div>
+    <div class="small">Tap athlete to view daily log</div>
     <div id="leaderboardCards"></div>
   </section>
 </section>
@@ -244,19 +265,11 @@ body.redemption-mode .log-reps-btn{background:linear-gradient(135deg,#f97316,#ef
 
 <section id="league" class="tab-page">
   <header class="card">
-    <div><div class="label" style="color:#c4b5fd">League HQ</div><h2>League</h2><div class="small">Records, achievements, events, and rules</div></div>
+    <div><div class="label" style="color:#c4b5fd">League HQ</div><h2>League</h2><div class="small">Records and special event rules</div></div>
   </header>
-  <section class="card">
-    <h2>Current Race</h2>
-    <div id="currentRace"></div>
-  </section>
   <section class="card">
     <h2>Records</h2>
     <div id="records"></div>
-  </section>
-  <section class="card">
-    <h2>Achievements</h2>
-    <div id="achievements"></div>
   </section>
   <section class="card mode-card">
     <div style="display:flex;gap:14px;align-items:center">
@@ -264,9 +277,10 @@ body.redemption-mode .log-reps-btn{background:linear-gradient(135deg,#f97316,#ef
       <div><div class="label" style="color:#c4b5fd">Special Events</div><h2 id="modeTitle">MAX-OUT<br>SATURDAY</h2></div>
     </div>
     <div id="eventModeBadge" class="mode-badge">Normal Mode</div>
-    <div class="rule-box" id="modeDescription">Best single-set strict pull-up max wins <b style="color:#fde047">+50 bonus points.</b></div>
-    <div class="rule-box">Redemption Weekend: <b>Sept 19–20</b>. Replace two lowest non-zero scoring days if higher.</div>
-    <div class="rule-box">Scoring: <b>Bodyweight × Reps ÷ 100</b>.</div>
+    <div class="rule-box event-card" id="modeDescription">Best single-set strict pull-up max wins <b style="color:#fde047">+50 bonus points.</b></div>
+    <div class="rule-box event-card"><b>🔥 Redemption Weekend:</b> Sept 19–20. Replace your two lowest non-zero scoring days if higher.</div>
+    <div class="rule-box event-card"><b>🏆 Championship Saturday:</b> If Sept 19 lands on Saturday, Redemption Weekend and Max-Out Saturday are both active.</div>
+    <div class="rule-box"><b>Scoring:</b> Bodyweight × Reps ÷ 100.</div>
     <div class="rule-box">Strict pull-ups only. Chin clearly above the bar. No kipping.</div>
   </section>
 </section>
@@ -303,7 +317,7 @@ function avatarHTML(name,sizePx,fontPx){
   return `<div class="avatar ${colorClass(name)}" style="width:${sizePx}px;height:${sizePx}px;font-size:${fontPx}px">${initials(name)}</div>`;
 }
 function profilePhotoHTML(name,w=116,h=116){
-  if(PROFILE_IMAGES[name]) return `<div class="photo-card profile-photo" style="--athlete-glow:${ATHLETE_GLOW[name]||"#7c3aed"};width:${w}px;height:${h}px"><img src="${PROFILE_IMAGES[name]}" alt="${name}" onerror="this.parentElement.outerHTML=\'<div class=\'avatar ${colorClass(name)}\' style=\'width:${w}px;height:${h}px;font-size:42px\'>${initials(name)}</div>\'"></div>`;
+  if(PROFILE_IMAGES[name]) return `<div class="photo-card profile-photo" style="--athlete-glow:${ATHLETE_GLOW[name]||"#7c3aed"};width:${w}px;height:${h}px"><img src="${PROFILE_IMAGES[name]}" alt="${name}"></div>`;
   return `<div class="avatar ${colorClass(name)}" style="width:${w}px;height:${h}px;font-size:42px">${initials(name)}</div>`;
 }
 function norm(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"")}
@@ -434,10 +448,13 @@ function renderPodium(stats){
 }
 
 function renderBoard(stats){
-  document.getElementById("leaderboardCards").innerHTML=stats.map((s,i)=>`<button class="leader" onclick="selectAthlete('${s.name}')"><div class="rank">${i===0?'🏆':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>${avatarHTML(s.name,54,22)}<div><div class="leader-name">${s.name}</div><div class="leader-meta">🔥 ${s.streak}d streak • 💪 ${s.best} max • <span class="${checkInClass(s)}">${checkInShort(s)}</span> • <span class="${weightClass(s)}">${weightChangeText(s)}</span></div></div><div class="lscore"><div>${Math.round(s.total)}</div><div>PTS</div></div></button>`).join("");
+  document.getElementById("leaderboardCards").innerHTML=stats.map((s,i)=>`<button class="leader" onclick="selectAthlete('${s.name}')"><div class="rank">${i===0?'🏆':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>${avatarHTML(s.name,54,22)}<div><div class="leader-name">${s.name}</div><div class="leader-meta"><span class="meta-line">🔥 ${s.streak}d streak • 💪 ${s.best} max</span><span class="meta-line"><span class="${checkInClass(s)}">${checkInShort(s)}</span> • <span class="${weightClass(s)}">${weightChangeText(s)}</span></span></div></div><div class="lscore"><div>${Math.round(s.total)}</div><div>PTS</div></div></button>`).join("");
+  const watch=[...stats].sort((a,b)=>(b.daysSinceLast??999)-(a.daysSinceLast??999)).slice(0,4);
+  const el=document.getElementById("checkInWatch");
+  if(el) el.innerHTML=watch.map(s=>`<div class="watch-row"><div><div class="watch-name">${s.name}</div><div class="watch-detail">${weightChangeText(s)}</div></div><div class="${checkInClass(s)}" style="font-weight:900;font-size:12px;text-align:right">${checkInShort(s)}</div></div>`).join("");
 }
 function renderAthleteCards(stats){
-  document.getElementById("athleteCards").innerHTML=stats.map(s=>`<button class="ath-card" onclick="selectAthlete('${s.name}')"><div class="ath-card-top">${avatarHTML(s.name,56,23)}<div><div class="name">${s.name}</div><div class="small">${initials(s.name)}</div></div></div><div class="pts">${Math.round(s.total)} PTS</div><div class="small" style="margin-top:7px">🔥 ${s.streak}d • 💪 ${s.best} max</div><div class="${checkInClass(s)}" style="font-size:12px;font-weight:900;margin-top:5px">${checkInShort(s)}</div></button>`).join("");
+  document.getElementById("athleteCards").innerHTML=stats.map(s=>`<button class="ath-card" onclick="selectAthlete('${s.name}')"><div class="ath-card-top">${avatarHTML(s.name,44,18)}<div><div class="name">${s.name}</div><div class="small">${initials(s.name)}</div></div></div><div class="pts">${Math.round(s.total)} PTS</div><div class="small" style="margin-top:6px">🔥 ${s.streak}d • 💪 ${s.best}</div><div class="${checkInClass(s)}" style="font-size:12px;font-weight:900;margin-top:4px">${checkInShort(s)}</div></button>`).join("");
 }
 function selectAthlete(name){
   showTab("athletes");
@@ -452,8 +469,8 @@ function renderProfile(s){
   const chart=renderChart(s);
   panel.innerHTML=`<div class="profile-head">${profilePhotoHTML(s.name,116,116)}<div><div class="profile-name">${s.name}</div><div class="profile-points">${Math.round(s.total)} PTS</div><div class="${weightClass(s)}" style="font-size:13px;font-weight:900;margin-top:5px">Current Weight: ${weightChangeText(s)}</div><div class="${checkInClass(s)}" style="font-size:13px;font-weight:900;margin-top:4px">Last Check-In: ${s.daysSinceLast===null?"No Entry Yet":s.daysSinceLast===0?"Today":s.daysSinceLast===1?"Yesterday":s.daysSinceLast+" Days Ago"}</div></div></div>
   <div class="stat-grid">${stat("Current Streak",s.streak,"🔥🔥🔥")}${stat("Best Max Set",s.best,spark())}${stat("Avg Daily",s.avg.toFixed(1))}${stat("Total Reps",s.reps)}</div>
-  <div class="card" style="margin:14px 0 0;padding:14px"><h2 style="font-size:24px">Daily Log</h2><div class="small">Every scoring day this month</div>${daily}</div>
-  <div class="card" style="margin:14px 0 0;padding:14px"><h2 style="font-size:24px">Progress Chart</h2><div class="small">Cumulative points</div>${chart}</div>`;
+  <div class="card" style="margin:14px 0 0;padding:14px"><h2 style="font-size:24px">Daily Log</h2><div class="small">Every scoring day this month</div><div class="daily-log-list">${daily}</div></div>
+  <div class="card chart-card" style="margin:14px 0 0;padding:14px"><h2 style="font-size:24px">Progress Chart</h2><div class="small">Cumulative points</div>${chart}</div>`;
 }
 function spark(){return `<div style="height:30px;display:flex;align-items:flex-end;gap:4px"><span style="height:25%;width:7px;border-radius:999px;background:#22c55e"></span><span style="height:42%;width:7px;border-radius:999px;background:#22c55e"></span><span style="height:36%;width:7px;border-radius:999px;background:#22c55e"></span><span style="height:58%;width:7px;border-radius:999px;background:#22c55e"></span><span style="height:44%;width:7px;border-radius:999px;background:#22c55e"></span><span style="height:68%;width:7px;border-radius:999px;background:#22c55e"></span></div>`}
 function renderDailyLog(s){
@@ -462,15 +479,25 @@ function renderDailyLog(s){
 }
 function renderChart(s){
   if(!s.days.length) return `<div class="chart"></div>`;
-  let cum=0; const vals=s.days.map(d=>{cum+=d.score;return cum});
-  const max=Math.max(...vals,1), w=460,h=140,p=18;
-  const pts=vals.map((v,i)=>{const x=p+(i/(Math.max(vals.length-1,1)))*(w-2*p); const y=h-p-(v/max)*(h-2*p); return [x,y]});
-  const poly=pts.map(p=>p.join(",")).join(" ");
+  let cum=0; const vals=s.days.map(d=>{cum+=d.score;return {date:d.date,val:cum,score:d.score}});
+  const max=Math.max(...vals.map(v=>v.val),1), w=460,h=190,pL=34,pR=26,pT=24,pB=34;
+  const pts=vals.map((v,i)=>{const x=pL+(i/(Math.max(vals.length-1,1)))*(w-pL-pR); const y=h-pB-(v.val/max)*(h-pT-pB); return [x,y,v]});
+  const line=pts.map(p=>p[0]+","+p[1]).join(" ");
+  const area=`${pL},${h-pB} `+line+` ${w-pR},${h-pB}`;
   const last=pts[pts.length-1];
-  return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${poly}" fill="none" stroke="#7dd3fc" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${last[0]}" cy="${last[1]}" r="7" fill="#22c55e"/><text x="${w-14}" y="24" fill="#94a3b8" font-size="14" text-anchor="end">${Math.round(vals[vals.length-1])} pts</text></svg>`;
+  const monthTicks=pts.map((p,i)=> i===0||i===pts.length-1 ? `<text class="chart-label" x="${p[0]}" y="${h-10}" text-anchor="${i===0?'start':'end'}">${niceDate(p[2].date)}</text>` : "").join("");
+  return `<div class="chart"><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
+    <defs><linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7dd3fc" stop-opacity=".30"/><stop offset="1" stop-color="#7dd3fc" stop-opacity="0"/></linearGradient></defs>
+    <line x1="${pL}" y1="${h-pB}" x2="${w-pR}" y2="${h-pB}" stroke="rgba(148,163,184,.22)" stroke-width="1"/>
+    <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${h-pB}" stroke="rgba(148,163,184,.14)" stroke-width="1"/>
+    <polygon points="${area}" fill="url(#chartFill)"/>
+    <polyline points="${line}" fill="none" stroke="#7dd3fc" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="7" fill="#22c55e" stroke="#dcfce7" stroke-width="2"/>
+    <text class="chart-value" x="${Math.min(last[0]+8,w-70)}" y="${Math.max(last[1]-8,20)}">${Math.round(last[2].val)} pts</text>
+    ${monthTicks}
+  </svg></div>`;
 }
 function renderLeague(stats,rows){
-  document.getElementById("currentRace").innerHTML=stats.map((s,i)=>`<div class="record-row"><div><div class="record-title">${i+1}. ${s.name}</div><div class="record-sub">${i===0?"Leader":Math.round(stats[0].total-s.total)+" pts back"}</div></div><div class="record-value">${Math.round(s.total)}</div></div>`).join("");
   const dailyByAthleteDay={};
   rows.forEach(r=>{const k=r.name+"|"+r.key;if(!dailyByAthleteDay[k])dailyByAthleteDay[k]={name:r.name,key:r.key,score:0,reps:0,max:0,date:r.date};dailyByAthleteDay[k].score+=r.score;dailyByAthleteDay[k].reps+=r.reps;dailyByAthleteDay[k].max=Math.max(dailyByAthleteDay[k].max,r.max||0);});
   const days=Object.values(dailyByAthleteDay);
@@ -487,10 +514,6 @@ function renderLeague(stats,rows){
     ["Most Weight Lost", weightLost?`${Math.abs(Math.round(weightLost.weightChange*10)/10)} lbs`:"—", weightLost?weightLost.name:"No weight loss yet"]
   ];
   document.getElementById("records").innerHTML=records.map(r=>`<div class="record-row"><div><div class="record-title">${r[0]}</div><div class="record-sub">${r[2]}</div></div><div class="record-value">${r[1]}</div></div>`).join("");
-  const achievements=[];
-  stats.forEach(s=>{if(s.total>0) achievements.push(`🔥 ${s.name} made a submission`); if(s.today>=100) achievements.push(`🚀 ${s.name} had a 100 point day`); if(s.best>=15) achievements.push(`⚡ ${s.name} hit a big max set`);});
-  if(stats[0]) achievements.unshift(`👑 Current leader: ${stats[0].name}`);
-  document.getElementById("achievements").innerHTML=(achievements.slice(0,8).length?achievements.slice(0,8):["No achievements yet"]).map(a=>`<div class="achievement-row"><div style="font-weight:900">${a}</div></div>`).join("");
 }
 
 function render(stats,rows){
@@ -504,9 +527,11 @@ function render(stats,rows){
   renderProfile(stats[0]);
 }
 async function loadAndRender(){
+  document.body.classList.add("loading");
   document.getElementById("lastUpdated").textContent="Refreshing...";
-  try{const rows=await loadData(); render(calc(rows),rows); document.getElementById("lastUpdated").textContent="Updated "+new Date().toLocaleTimeString();}
-  catch(e){console.error(e); document.getElementById("lastUpdated").textContent="Could not load";}
+  try{const rows=await loadData(); render(calc(rows),rows); document.body.classList.remove("loading");
+    document.getElementById("lastUpdated").textContent="Updated "+new Date().toLocaleTimeString();}
+  catch(e){console.error(e); document.body.classList.remove("loading"); document.getElementById("lastUpdated").textContent="Could not load";}
 }
 updateCountdown(); setInterval(updateCountdown,1000); loadAndRender();
 </script>
