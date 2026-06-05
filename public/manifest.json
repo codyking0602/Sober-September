@@ -7,6 +7,7 @@
   "background_color": "#050816",
   "theme_color": "#050816",
   "orientation": "portrait",
+  "description": "Strict Pull-Up Challenge",
   "icons": [
     {
       "src": "/icon-192.png",
