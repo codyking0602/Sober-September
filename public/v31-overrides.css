@@ -1,0 +1,14 @@
+/* V31 polish overrides */
+#home > section.grid2{display:none!important}
+.leader{padding:15px!important;align-items:center!important;grid-template-columns:34px 50px minmax(0,1fr) 58px!important}
+.leader-meta{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25!important;margin-top:5px!important}
+.meta-line{display:block!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25!important}
+.lscore{align-self:center!important}.lscore div:first-child{font-size:30px!important}
+.chart-card{padding:12px!important}
+.chart{height:165px!important;margin-top:10px!important}
+.chart svg{width:100%!important;height:100%!important;display:block!important}
+.record-row{align-items:flex-start!important;min-height:74px!important;padding:14px 0!important}
+.record-title{line-height:1.18!important;max-width:250px!important}
+.record-sub{line-height:1.25!important}
+.record-value{line-height:1.12!important;padding-top:1px!important;min-width:92px!important}
+@media(max-width:390px){.record-title{max-width:220px!important}.leader{grid-template-columns:32px 48px minmax(0,1fr) 56px!important}.leader .avatar{width:48px!important;height:48px!important}.chart{height:155px!important}}
