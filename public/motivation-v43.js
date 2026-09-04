@@ -10,10 +10,10 @@
       width:100%;border:1px solid rgba(255,255,255,.10);border-radius:16px;
       background:linear-gradient(90deg,rgba(124,58,237,.22),rgba(34,197,94,.12));
       color:#fff;padding:14px 14px;margin:0 0 14px;display:flex;align-items:center;
-      justify-content:space-between;gap:12px;font-weight:900;font-size:13px;
+      justify-content:center;gap:12px;font-weight:900;font-size:13px;position:relative;
       letter-spacing:.12em;text-transform:uppercase;box-shadow:0 8px 28px rgba(0,0,0,.24)
     }
-    .motivation-bar .motivation-chevron{font-size:20px;color:#c4b5fd;line-height:1}
+    .motivation-bar .motivation-chevron{font-size:20px;color:#c4b5fd;line-height:1;position:absolute;right:14px;top:50%;transform:translateY(-50%)}
     #motivation{position:relative;min-height:calc(100vh - 130px);overflow:hidden;border-radius:28px;--motivation-bg:none}
     #motivation::before{content:"";position:absolute;inset:0;background-image:var(--motivation-bg);background-position:center 18%;background-size:cover;background-repeat:no-repeat;opacity:.54;filter:brightness(1.08) saturate(.95);pointer-events:none}
     #motivation::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,6,23,.22),rgba(2,6,23,.48) 58%,rgba(2,6,23,.72));pointer-events:none}
