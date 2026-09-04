@@ -274,7 +274,7 @@ function maybeShowChampionModal(stats){
 }
   function render(stats,rows){window.currentStats=stats;window.currentRows=rows;renderPodium(stats);renderAthleteCards(stats);renderLeague(stats,rows);renderRedemptionTracker(stats);renderMaxLeader(stats,rows);const pct=challengeProgressPct();document.getElementById("progressText").textContent=pct+"%";document.getElementById("progressBar").style.width=pct+"%";const today=[...stats].sort((a,b)=>b.today-a.today)[0],callout=getCallout(stats,rows);[["todayLeader",today?.name||"—"],["todayPoints",`${Math.round(today?.today||0)} pts today`],["calloutText",callout.main],["calloutSub",callout.sub]].forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.textContent=val});renderProfile(stats[0]);maybeShowChampionModal(stats)}
 async function loadAndRender(){document.body.classList.add("loading");document.getElementById("lastUpdated").textContent="Updating standings...";try{const rows=await loadData();await new Promise(r=>setTimeout(r,650));render(calc(rows),rows);document.body.classList.remove("loading");document.getElementById("lastUpdated").textContent="Updated "+new Date().toLocaleTimeString()}catch(e){console.error(e);document.body.classList.remove("loading");document.getElementById("lastUpdated").textContent="Could not load"}}
-updateCountdown();setInterval(updateCountdown,1000);loadAndRender();
+const fixesScript=document.createElement("script");fixesScript.src="/central-fixes.js?v=41";fixesScript.onload=()=>{updateCountdown();setInterval(updateCountdown,1000);loadAndRender()};fixesScript.onerror=()=>{console.error("Could not load Central fixes");updateCountdown();setInterval(updateCountdown,1000);loadAndRender()};document.head.appendChild(fixesScript);
 </script>
 </body>
 </html>
