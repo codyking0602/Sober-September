@@ -57,7 +57,7 @@
         <div>
           <div class="motivation-kicker">Lock In</div>
           <div class="motivation-title">Motivation</div>
-          <div class="motivation-sub">Pick one. Get moving.</div>
+          <div class="motivation-sub">“My definition of discipline is doing what you hate to do, but do it like you love it.” — Mike Tyson</div>
         </div>
       </div>
       <div class="motivation-grid">
