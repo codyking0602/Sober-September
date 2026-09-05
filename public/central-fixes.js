@@ -17,4 +17,5 @@
   loadSync("/motivation-v43.js?v=47");
   loadSync("/podium-photos-v46.js?v=46");
   loadSync("/chase-to-one-v48.js?v=50");
+  loadSync("/submission-auto-refresh-v51.js?v=51");
 })();
