@@ -1,7 +1,8 @@
 (() => {
   const videos = [
     { id: "ysTGb27yCcc" },
-    { id: "cH0gED2stDM" }
+    { id: "cH0gED2stDM" },
+    { id: "S2eso4vLPms" }
   ];
 
   const style = document.createElement("style");
@@ -28,6 +29,9 @@
     .motivation-thumb{position:relative;aspect-ratio:1/1;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.15);background:#020617;box-shadow:0 12px 34px rgba(0,0,0,.38)}
     .motivation-thumb img{width:100%;height:100%;object-fit:cover;display:block}
     .motivation-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:999px;background:rgba(2,6,23,.78);border:1px solid rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center;font-size:19px;padding-left:3px;backdrop-filter:blur(8px)}
+    .motivation-duration{position:absolute;right:8px;bottom:8px;z-index:3;display:none;padding:3px 6px;border-radius:6px;background:rgba(2,6,23,.88);color:#fff;font-size:11px;font-weight:900;line-height:1.15;letter-spacing:.02em;font-variant-numeric:tabular-nums;box-shadow:0 2px 8px rgba(0,0,0,.32)}
+    .motivation-duration.ready{display:block}
+    #motivation-duration-probes{position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
     @media(max-width:350px){.motivation-grid{grid-template-columns:1fr}}
   `;
   document.head.appendChild(style);
@@ -61,6 +65,7 @@
             <div class="motivation-thumb">
               <img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="YouTube video thumbnail" loading="lazy">
               <div class="motivation-play">▶</div>
+              <div class="motivation-duration" data-duration-for="${v.id}"></div>
             </div>
           </a>`).join("")}
       </div>
@@ -72,10 +77,99 @@
     .then(data => section.style.setProperty("--motivation-bg", `url("data:image/webp;base64,${data.trim()}")`))
     .catch(() => {});
 
+  function formatDuration(seconds){
+    const total = Math.round(Number(seconds) || 0);
+    if (!total) return "";
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const secs = total % 60;
+    return hours
+      ? `${hours}:${String(minutes).padStart(2,"0")}:${String(secs).padStart(2,"0")}`
+      : `${minutes}:${String(secs).padStart(2,"0")}`;
+  }
+
+  function showDuration(videoId, seconds){
+    const badge = section.querySelector(`[data-duration-for="${videoId}"]`);
+    const text = formatDuration(seconds);
+    if (!badge || !text) return;
+    badge.textContent = text;
+    badge.classList.add("ready");
+  }
+
+  function initDurationPlayers(){
+    if (section.dataset.durationPlayersStarted === "1" || !window.YT?.Player) return;
+    section.dataset.durationPlayersStarted = "1";
+
+    let probes = document.getElementById("motivation-duration-probes");
+    if (!probes){
+      probes = document.createElement("div");
+      probes.id = "motivation-duration-probes";
+      document.body.appendChild(probes);
+    }
+
+    videos.forEach(v => {
+      const probe = document.createElement("div");
+      probe.id = `yt-duration-${v.id}`;
+      probes.appendChild(probe);
+      let attempts = 0;
+
+      new YT.Player(probe.id, {
+        width: "1",
+        height: "1",
+        videoId: v.id,
+        playerVars: { controls: 0, disablekb: 1, playsinline: 1, rel: 0 },
+        events: {
+          onReady: event => {
+            try { event.target.cueVideoById(v.id); } catch (_) {}
+            const readDuration = () => {
+              let duration = 0;
+              try { duration = event.target.getDuration(); } catch (_) {}
+              if (duration > 0){
+                showDuration(v.id, duration);
+                try { event.target.destroy(); } catch (_) {}
+                return;
+              }
+              attempts += 1;
+              if (attempts < 32) setTimeout(readDuration, 250);
+              else try { event.target.destroy(); } catch (_) {}
+            };
+            setTimeout(readDuration, 150);
+          },
+          onError: event => {
+            try { event.target.destroy(); } catch (_) {}
+          }
+        }
+      });
+    });
+  }
+
+  function ensureYouTubeDurationAPI(){
+    if (window.YT?.Player){
+      initDurationPlayers();
+      return;
+    }
+
+    const previousReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      if (typeof previousReady === "function"){
+        try { previousReady(); } catch (_) {}
+      }
+      initDurationPlayers();
+    };
+
+    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')){
+      const api = document.createElement("script");
+      api.src = "https://www.youtube.com/iframe_api";
+      api.async = true;
+      document.head.appendChild(api);
+    }
+  }
+
   function openMotivation(){
     document.querySelectorAll(".tab-page").forEach(p => p.classList.toggle("active", p.id === "motivation"));
     document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
     window.scrollTo({top:0,behavior:"smooth"});
+    ensureYouTubeDurationAPI();
   }
 
   bar.addEventListener("click", openMotivation);
