@@ -16,5 +16,5 @@
   loadSync("/competition-v42.js?v=42");
   loadSync("/motivation-v43.js?v=47");
   loadSync("/podium-photos-v46.js?v=46");
-  loadSync("/chase-to-one-v48.js?v=49");
+  loadSync("/chase-to-one-v48.js?v=50");
 })();
