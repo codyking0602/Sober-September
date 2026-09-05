@@ -14,6 +14,6 @@
 
   loadSync("/central-fixes-v41.js?v=41");
   loadSync("/competition-v42.js?v=42");
-  loadSync("/motivation-v43.js?v=45");
+  loadSync("/motivation-v43.js?v=47");
   loadSync("/podium-photos-v46.js?v=46");
 })();
