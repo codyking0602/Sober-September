@@ -9,6 +9,15 @@
   let pollTimer = null;
   let stopTimer = null;
   let lastFocusStart = 0;
+  let bestSeenRows = Array.isArray(window.currentRows) ? window.currentRows.length : 0;
+  let bestSeenLatestMs = newestTimestamp(window.currentRows || []);
+
+  function newestTimestamp(rows) {
+    return (rows || []).reduce((latest, row) => {
+      const time = row?.date instanceof Date ? row.date.getTime() : 0;
+      return Math.max(latest, Number.isFinite(time) ? time : 0);
+    }, 0);
+  }
 
   function getMarker() {
     try {
@@ -30,6 +39,8 @@
       clickedAt: Date.now(),
       baselineRows: Array.isArray(window.currentRows) ? window.currentRows.length : null
     };
+    bestSeenRows = Math.max(bestSeenRows, marker.baselineRows || 0);
+    bestSeenLatestMs = Math.max(bestSeenLatestMs, newestTimestamp(window.currentRows || []));
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(marker));
     } catch (_) {}
@@ -44,11 +55,34 @@
     if (el) el.textContent = text;
   }
 
+  function isOlderSnapshot(rows) {
+    const count = Array.isArray(rows) ? rows.length : 0;
+    const latestMs = newestTimestamp(rows);
+    if (count < bestSeenRows) return true;
+    if (count === bestSeenRows && latestMs < bestSeenLatestMs) return true;
+    return false;
+  }
+
+  function rememberSnapshot(rows) {
+    bestSeenRows = Math.max(bestSeenRows, Array.isArray(rows) ? rows.length : 0);
+    bestSeenLatestMs = Math.max(bestSeenLatestMs, newestTimestamp(rows));
+  }
+
   async function pollOnce() {
     if (document.visibilityState === "hidden") return;
     try {
       setStatus("Checking for your reps…");
       const rows = await loadData();
+
+      // Google's published CSV can briefly alternate between fresh and stale edge-cache
+      // snapshots after a form submission. Once we've seen newer data, never render an
+      // older snapshot and make the standings move backward.
+      if (isOlderSnapshot(rows)) {
+        setStatus("Waiting for latest data…");
+        return;
+      }
+
+      rememberSnapshot(rows);
       render(calc(rows), rows);
       setStatus(`Auto-updated ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
     } catch (err) {
@@ -75,6 +109,12 @@
     if (Date.now() - lastFocusStart < 1000) return;
     lastFocusStart = Date.now();
     polling = true;
+    bestSeenRows = Math.max(
+      bestSeenRows,
+      marker.baselineRows || 0,
+      Array.isArray(window.currentRows) ? window.currentRows.length : 0
+    );
+    bestSeenLatestMs = Math.max(bestSeenLatestMs, newestTimestamp(window.currentRows || []));
 
     pollOnce();
     pollTimer = setInterval(pollOnce, POLL_MS);
