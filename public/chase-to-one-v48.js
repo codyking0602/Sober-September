@@ -11,16 +11,48 @@
     <div id="chaseList" class="chase-list"></div>
   `;
 
+  const todayPointsEl = document.getElementById("todayPoints");
+  let todayRepsEl = document.getElementById("todayReps");
+  if (todayPointsEl && !todayRepsEl) {
+    todayRepsEl = document.createElement("div");
+    todayRepsEl.id = "todayReps";
+    todayRepsEl.className = "today-reps";
+    todayPointsEl.insertAdjacentElement("afterend", todayRepsEl);
+  }
+
   const style = document.createElement("style");
   style.textContent = `
     .home-race-grid{
-      grid-template-columns:minmax(0,.82fr) minmax(0,1.68fr);
+      grid-template-columns:minmax(0,.9fr) minmax(0,1.6fr);
       align-items:stretch;
     }
     .home-race-grid > .mini:first-child{
       display:flex;
       flex-direction:column;
       justify-content:center;
+      padding:13px;
+    }
+    .home-race-grid > .mini:first-child .label{
+      font-size:9px;
+      letter-spacing:.20em;
+      white-space:nowrap;
+    }
+    .home-race-grid > .mini:first-child .big{
+      font-size:24px;
+    }
+    #todayPoints{
+      font-size:19px!important;
+      line-height:1.05;
+      margin-top:6px!important;
+      white-space:nowrap;
+    }
+    .today-reps{
+      margin-top:5px;
+      color:#94a3b8;
+      font-size:12px;
+      line-height:1.1;
+      font-weight:800;
+      white-space:nowrap;
     }
     .home-race-grid > .max-only,
     .home-race-grid > .redemption-only{
@@ -28,28 +60,32 @@
     }
     .chase-card{
       min-height:126px;
-      padding:13px 14px 11px!important;
+      padding:12px 13px 10px!important;
+    }
+    .chase-card #chaseLabel{
+      font-size:9px;
+      letter-spacing:.24em;
     }
     .chase-list{
-      margin-top:7px;
+      margin-top:5px;
     }
     .chase-row{
       display:grid;
-      grid-template-columns:22px minmax(0,.8fr) minmax(0,1.35fr);
+      grid-template-columns:20px minmax(0,.86fr) auto;
       align-items:center;
       gap:6px;
-      padding:6px 0;
+      padding:5px 0;
       border-bottom:1px solid rgba(255,255,255,.07);
     }
     .chase-row:last-child{border-bottom:0}
     .chase-rank{
       color:#94a3b8;
-      font-size:12px;
+      font-size:11px;
       font-weight:900;
       text-align:center;
     }
     .chase-name{
-      font-size:13px;
+      font-size:12px;
       font-weight:900;
       white-space:nowrap;
       overflow:hidden;
@@ -57,7 +93,7 @@
     }
     .chase-main{
       color:#7dd3fc;
-      font-size:12px;
+      font-size:11px;
       line-height:1.05;
       font-weight:900;
       text-align:right;
@@ -65,11 +101,11 @@
     }
     .chase-sub{
       color:#94a3b8;
-      font-size:10px;
-      line-height:1.1;
+      font-size:9px;
+      line-height:1.05;
       font-weight:800;
       text-align:right;
-      margin-top:2px;
+      margin-top:1px;
       white-space:nowrap;
     }
     .chase-row.leader .chase-rank{color:#fde047}
@@ -80,12 +116,16 @@
     body.redemption-mode .chase-card{border-color:rgba(251,113,133,.26)}
     body.redemption-mode .chase-card #chaseLabel{color:#fb7185}
     @media(max-width:390px){
-      .home-race-grid{grid-template-columns:minmax(0,.76fr) minmax(0,1.74fr);gap:9px}
-      .home-race-grid > .mini{padding:13px}
-      .chase-card{padding:12px 11px 10px!important}
-      .chase-row{grid-template-columns:20px minmax(0,.72fr) minmax(0,1.38fr);gap:4px}
-      .chase-name,.chase-main{font-size:11px}
-      .chase-sub{font-size:9px}
+      .home-race-grid{grid-template-columns:minmax(0,.86fr) minmax(0,1.64fr);gap:9px}
+      .home-race-grid > .mini:first-child{padding:11px}
+      .home-race-grid > .mini:first-child .label{font-size:8px;letter-spacing:.16em}
+      .home-race-grid > .mini:first-child .big{font-size:22px}
+      #todayPoints{font-size:17px!important}
+      .today-reps{font-size:11px}
+      .chase-card{padding:11px 10px 9px!important}
+      .chase-row{grid-template-columns:18px minmax(0,.78fr) auto;gap:4px;padding:4px 0}
+      .chase-name,.chase-main{font-size:10px}
+      .chase-sub{font-size:8px}
     }
   `;
   document.head.appendChild(style);
@@ -102,20 +142,31 @@
     </div>`;
   }
 
+  function chaseWeight(s) {
+    const entered = Number(s.currentWeight) || 0;
+    if (entered > 0) return entered;
+    if (s.name === "DJ") return 180;
+    return 0;
+  }
+
   function normalRows(stats) {
     if (!stats || !stats.length) return `<div class="small" style="margin-top:10px">Waiting for standings</div>`;
     const leader = stats[0];
+    const leaderDisplay = Math.round(Number(leader.total) || 0);
+
     return stats.map((s, i) => {
-      if (i === 0) return rowHTML(1, s.name, `${fmtPoints(s.total)} pts`, "Current leader", true);
-      const gap = Math.max(0, Number(leader.total || 0) - Number(s.total || 0));
-      if (gap <= .0001) return rowHTML(i + 1, s.name, "Tied for 1st", "0 reps to tie");
-      const reps = Number(s.currentWeight) > 0 ? Math.ceil(gap / (Number(s.currentWeight) / 100)) : null;
-      return rowHTML(
-        i + 1,
-        s.name,
-        `${fmtPoints(gap)} pts back`,
-        reps === null ? "Weight needed for rep target" : `${reps.toLocaleString()} reps to tie`
-      );
+      const shownTotal = Math.round(Number(s.total) || 0);
+      if (i === 0) return rowHTML(1, s.name, `${shownTotal.toLocaleString()} pts`, "", true);
+
+      const gap = Math.max(0, leaderDisplay - shownTotal);
+      if (gap === 0) return rowHTML(i + 1, s.name, "Tied • 0 reps", "");
+
+      const weight = chaseWeight(s);
+      const reps = weight > 0 ? Math.ceil(gap / (weight / 100)) : null;
+      const main = reps === null
+        ? `${gap.toLocaleString()} pts back`
+        : `${gap.toLocaleString()} pts • ${reps.toLocaleString()} reps`;
+      return rowHTML(i + 1, s.name, main, "");
     }).join("");
   }
 
@@ -136,7 +187,7 @@
       i + 1,
       s.name,
       s.eventMax > 0 ? `${s.eventMax} reps` : "No max yet",
-      i === 0 && s.eventMax > 0 ? "Current Max-Out leader" : "Saturday max",
+      i === 0 && s.eventMax > 0 ? "Max-Out leader" : "Saturday max",
       i === 0 && s.eventMax > 0
     )).join("");
   }
@@ -174,6 +225,22 @@
     }).join("");
   }
 
+  function renderTodaySummary(stats, rows) {
+    const pointsEl = document.getElementById("todayPoints");
+    const repsEl = document.getElementById("todayReps");
+    if (!pointsEl || !repsEl || !stats || !stats.length) return;
+
+    const todayLeader = [...stats].sort((a, b) => b.today - a.today)[0];
+    if (!todayLeader) return;
+
+    pointsEl.textContent = `${fmtPoints(todayLeader.today)} pts`;
+    const key = dayKey(new Date());
+    const reps = (rows || [])
+      .filter(r => r.name === todayLeader.name && r.key === key)
+      .reduce((sum, r) => sum + (Number(r.reps) || 0), 0);
+    repsEl.textContent = `${reps.toLocaleString()} reps today`;
+  }
+
   function renderChase(stats, rows) {
     const label = document.getElementById("chaseLabel");
     const list = document.getElementById("chaseList");
@@ -198,6 +265,7 @@
   const previousRender = render;
   render = function(stats, rows) {
     previousRender(stats, rows);
+    renderTodaySummary(stats, rows);
     renderChase(stats, rows);
   };
 })();
