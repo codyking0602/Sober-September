@@ -14,6 +14,7 @@
 
   loadSync("/central-fixes-v41.js?v=41");
   loadSync("/competition-v42.js?v=42");
+  loadSync("/active-athletes-v57.js?v=57");
   loadSync("/motivation-v43.js?v=49");
   loadSync("/podium-photos-v46.js?v=46");
   loadSync("/chase-to-one-v48.js?v=50");
